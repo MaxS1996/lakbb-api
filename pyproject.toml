@@ -29,7 +29,7 @@ long_description = "file: README.md"
 long_description_content_type = "text/markdown"
 author = "Max Sponner"
 author_email = "max@sponner.eu"
-url = "https://github.com/yourusername/notdienst-finder"
+url = "https://github.com/MaxS1996/lakbb-api"
 license = "MIT"
 classifiers = [
     "Programming Language :: Python :: 3",
