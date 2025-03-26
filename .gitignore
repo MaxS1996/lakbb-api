@@ -1,0 +1,66 @@
+# Python Bytecode files
+__pycache__/
+*.py[cod]
+
+# Distribution / Packaging
+.Python
+build/
+dist/
+*.egg-info/
+*.egg
+*.whl
+
+# Virtual environment
+venv/
+env/
+ENV/
+.venv/
+.venv-*
+
+# IDE and Editor specific
+.vscode/
+.idea/
+*.swp
+*.swo
+*.sublime-workspace
+*.sublime-project
+*.iml
+
+# Jupyter Notebooks
+.ipynb_checkpoints/
+
+# Python Environment and Cache
+*.pyo
+*.pyd
+*.db
+*.sqlite
+__pycache__/
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Test coverage reports
+.coverage
+.coverage.*
+nosetests.xml
+pytest.xml
+test-*.xml
+*.hypothesis/
+
+# Package manager
+.pipenv/
+Pipfile.lock
+.poetry/
+
+# PyInstaller
+*.spec
+
+# Python Wheel Files
+*.whl
+
+# Cython Debugging
+cython_debug/
