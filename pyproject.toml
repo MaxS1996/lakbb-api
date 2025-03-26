@@ -1,0 +1,49 @@
+[build-system]
+requires = ["setuptools>=42", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = ["notdienst_finder", "notdienst_finder.crawlers"]
+
+[tool.setuptools.packages.find]
+where = ["notdienst_finder"]
+
+[tool.setuptools.include]
+include = ["notdienst_finder/crawlers/*"]
+
+[tool.setuptools.entry_points]
+# Define entry points if you have command-line scripts
+# Example:
+# console_scripts =
+#     my_command = my_package.module:main_func
+
+[tool.setuptools.scripts]
+# Example of including scripts
+# script = "scripts/my_script.py"
+
+[tool.setuptools.metadata]
+name = "notdienst-finder"
+version = "0.1.0"
+description = "A package to find emergency pharmacies in Germany (currently only Berlin and Brandenburg)."
+long_description = "file: README.md"
+long_description_content_type = "text/markdown"
+author = "Max Sponner"
+author_email = "max@sponner.eu"
+url = "https://github.com/yourusername/notdienst-finder"
+license = "MIT"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+
+[tool.setuptools.dependencies]
+install_requires = [
+    "requests",
+    "beautifulsoup4",
+]
+
+[tool.setuptools.testing]
+tests_require = [
+    "pytest",
+]
