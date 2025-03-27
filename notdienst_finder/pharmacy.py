@@ -1,4 +1,6 @@
-from typing import List, Optional
+from typing import List, Optional, Dict
+from datetime import datetime, timedelta
+import json
 
 class Pharmacy:
     """
@@ -104,7 +106,58 @@ class Pharmacy:
         """
         return f"<Pharmacy {self.name} ({self.street}, {self.town},  {self.state})>"
     
-def get_emergency_pharmacies(plz:str = "14467", state:str="Brandenburg", date: Optional[int] = None, limit: int = 4, morning_change: bool = True) -> List[Pharmacy]:
+    def to_dict(self) -> Dict:
+        """Converts the Pharmacy object to a dictionary."""
+        return {
+            "name": self.name,
+            "street": self.street,
+            "town": self.town,
+            "state": self.state,
+            "phone": self.phone,
+            "fax": self.fax,
+            "web": self.web,
+            "mail": self.mail,
+            "gmaps": self.gmaps,
+            "latitude": self._latitude,
+            "longitude": self._longitude,
+            "osm_address": self._osm_address,
+            "osm_data" : self.__osm_data,
+        }
+    
+    def to_json(self) -> str:
+        """Converts the Pharmacy object to a JSON string."""
+        return json.dumps(self.to_dict(), indent=4)
+    
+    @classmethod
+    def from_dict(cls, data: Dict):
+        """Creates a Pharmacy object from a dictionary."""
+        pharm = cls(
+            name=data["name"],
+            street=data["street"],
+            town=data["town"],
+            state=data.get("state"),
+            phone=data.get("phone"),
+            fax=data.get("fax"),
+            web=data.get("web"),
+            mail=data.get("mail"),
+            gmaps=data.get("gmaps"),
+        )
+        pharm._latitude = data.get("latitude")
+        pharm._longitude = data.get("longitude")
+
+        pharm._osm_address = data.get("osm_address")
+        pharm.__osm_data = data.get("osm_data")
+        return pharm
+    
+    @classmethod
+    def from_json(cls, json_str: str):
+        """Creates a Pharmacy object from a JSON string."""
+        data = json.loads(json_str)
+        return cls.from_dict(data)
+    
+
+    
+def get_emergency_pharmacies(plz:str = "14467", state:str="Brandenburg", date: Optional[datetime] = None, limit: int = 4, morning_change: bool = True) -> List[Pharmacy]:
     """
     Fetches emergency pharmacies based on postal code, state, date, and other filters.
 
@@ -121,6 +174,9 @@ def get_emergency_pharmacies(plz:str = "14467", state:str="Brandenburg", date: O
     Returns:
         List[Pharmacy]: A list of Pharmacy objects that match the search criteria.
     """
+    if date is None:
+        date = datetime.now()
+
     if state.lower() in ["berlin", "brandenburg"]:
         from notdienst_finder.crawlers import lakbb
         pharmacies = lakbb.get_emergency_pharmacies(plz=plz, date=date, limit=limit, morning_change=morning_change)

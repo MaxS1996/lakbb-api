@@ -14,9 +14,14 @@ HEADERS = {
     "Referer": "https://www.google.com/",
 }
     
-def get_emergency_pharmacies(plz: str = "01987", date: Optional[int] = None, limit: int = 4, morning_change: bool = True) -> List[Pharmacy]:
+def get_emergency_pharmacies(plz: str = "01987", date: Optional[datetime] = None, limit: int = 4, morning_change: bool = True) -> List[Pharmacy]:
     """Fetches emergency pharmacies for a given postal code (PLZ) and date."""
+
+    if limit <= 0:
+        limit = float("inf")
     
+    if not date:
+        date = datetime.now()
     date = adjust_date(date, morning_change)
     url = f"{BASE_URL}?suchbegriff={plz}&datum={date}"
 
@@ -27,18 +32,21 @@ def get_emergency_pharmacies(plz: str = "01987", date: Optional[int] = None, lim
     pharmacies = parse_pharmacies(html, limit)
     return pharmacies if pharmacies else [Pharmacy(name="Keine Notdienst-Apotheken gefunden", street="N/A", town="N/A")]
 
-def adjust_date(date: Optional[int], morning_change: bool) -> str:
+def adjust_date(date: Optional[datetime], morning_change: bool) -> str:
     """Adjusts the date based on morning change rule (before 8 AM => show yesterday)."""
     
     if date is None:
-        date = int(time.time())  # Current timestamp
+        date = datetime.now()  # Current timestamp
 
     if morning_change:
-        today_8am = datetime.fromtimestamp(date).replace(hour=8, minute=0, second=0)
-        if datetime.fromtimestamp(date) < today_8am:
-            date -= 86400  # Go back one day
+        today_8am = date.replace(hour=8, minute=0, second=0)
+        if date < today_8am:
+            date = date - timedelta(days=1)  # Go back one day
+        else:
+            date = date.replace(hour=12, minute=0, second=0)
 
-    return datetime.fromtimestamp(date).strftime("%d.%m.%Y")
+
+    return date.strftime("%d.%m.%Y")
 
 def fetch_html(url: str) -> Optional[str]:
     """Fetches the HTML content of the given URL."""
