@@ -82,7 +82,8 @@ def parse_pharmacies(html: str, limit: int) -> List[Pharmacy]:
             continue
         
         pharmacy = extract_pharmacy_details(cols)
-        pharmacies.append(pharmacy)
+        if pharmacy.name != "Unbekannt":
+            pharmacies.append(pharmacy)
 
     return pharmacies
 
