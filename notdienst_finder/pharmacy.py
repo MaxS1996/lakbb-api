@@ -1,6 +1,10 @@
 from typing import List, Optional, Dict
-from datetime import datetime, timedelta
+from datetime import datetime
 import json
+
+import logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 class Pharmacy:
     """
@@ -63,15 +67,15 @@ class Pharmacy:
             self._osm_address = self.__osm_data.get("display_name")
 
         if self.__osm_data and fix_data:
-            self.street = self.__osm_data["address"]["road"]
-            if "house_number" in self.__osm_data["address"].keys():
-                self.street += " " + self.__osm_data["address"].get("house_number")
-            
-            if "town" in self.__osm_data["address"].keys():
-                self.town = self.__osm_data["address"]["town"]
+            # fixes the data provided by the chamber by overwriting it with OSM data, if available and desired
 
-            if "state" in self.__osm_data["address"].keys():
-                self.state = self.__osm_data["address"]["state"]
+            ## if a house number is provided, it will be added, OSM data does not always contain one
+            house_number = self.__osm_data["address"].get("house_number", "")
+            self.street = f"{self.__osm_data['address']['road']} {house_number}".strip()
+            
+            self.town = self.__osm_data["address"].get("town", self.town)
+
+            self.state = self.__osm_data["address"].get("state", self.state)
 
     @property
     def latitude(self) -> str:
@@ -104,7 +108,8 @@ class Pharmacy:
         Returns:
             str: A string that represents the pharmacy object in the form: <Pharmacy {name} ({street}, {town}, {state})>
         """
-        return f"<Pharmacy {self.name} ({self.street}, {self.town},  {self.state})>"
+        state_info = f", {self.state}" if self.state else ""
+        return f"<Pharmacy {self.name} ({self.street}, {self.town}{state_info})>"
     
     def to_dict(self) -> Dict:
         """Converts the Pharmacy object to a dictionary."""
@@ -146,7 +151,7 @@ class Pharmacy:
         pharm._longitude = data.get("longitude")
 
         pharm._osm_address = data.get("osm_address")
-        pharm.__osm_data = data.get("osm_data")
+        pharm.__osm_data = data.get("osm_data", {})
         return pharm
     
     @classmethod
@@ -164,23 +169,31 @@ def get_emergency_pharmacies(plz:str = "14467", state:str="Brandenburg", date: O
     Args:
         plz (str, optional): The postal code to filter pharmacies. Defaults to "14467".
         state (str, optional): The state to filter pharmacies. Defaults to "Brandenburg".
-        date (Optional[int], optional): The specific date to filter pharmacies. Wil return today's information if None. Defaults to None.
+        date (Optional[datetime], optional): The specific date to filter pharmacies. Wil return today's information if None. Defaults to None.
         limit (int, optional): The maximum number of pharmacies to fetch. Defaults to 4.
         morning_change (bool, optional): If set to True, fetch pharmacies that are available in the morning before the switch on that day. Defaults to True.
 
     Raises:
-        NotImplementedError: Raises an error if the information for currently unsupported states is requested.
+        NotImplementedError: Raises an error if the information for currently not supported states is requested.
 
     Returns:
         List[Pharmacy]: A list of Pharmacy objects that match the search criteria.
     """
+    LAKBB_STATES = {"berlin", "brandenburg"}
+
+    SUPPORTED_STATES = {"berlin", "brandenburg"}
+
+    logger.info(f"Fetching emergency pharmacies for PLZ {plz}, State: {state}, Date: {date}, Limit: {limit}, Morning Change: {morning_change}")
+    
+    if state.lower() not in SUPPORTED_STATES:
+        raise NotImplementedError(f"Emergency pharmacy lookup is not supported for '{state}'.")
+
     if date is None:
         date = datetime.now()
 
-    if state.lower() in ["berlin", "brandenburg"]:
+    pharmacies = []
+    if state.lower() in LAKBB_STATES:
         from notdienst_finder.crawlers import lakbb
         pharmacies = lakbb.get_emergency_pharmacies(plz=plz, date=date, limit=limit, morning_change=morning_change)
-    else:
-        raise NotImplementedError(f"Your given state '{state}' is currently not yet supported!")
     
     return pharmacies

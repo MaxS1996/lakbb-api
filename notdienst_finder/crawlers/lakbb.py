@@ -7,7 +7,12 @@ from typing import List, Optional
 
 from notdienst_finder.pharmacy import Pharmacy
 
-# 🔹 Constants
+import logging
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+# Constants
 BASE_URL = "https://lakbb-typo3.notdienst-portal.de/schnellsuche/index.php"
 HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36",
@@ -61,7 +66,8 @@ def fetch_html(url: str) -> Optional[str]:
          # Force UTF-8 conversion (handles "ö", "ü", "ß", etc.)
         return response.text.encode(response.encoding).decode("utf-8", errors="ignore")
     
-    except requests.RequestException:
+    except requests.RequestException as e:
+        logger.error(f"Failed to fetch HTML from {url}: {e}")
         return None
     
 def parse_pharmacies(html: str, limit: int) -> List[Pharmacy]:
